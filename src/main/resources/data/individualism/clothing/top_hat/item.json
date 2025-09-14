@@ -1,7 +1,0 @@
-{
-  "name": "Top Hat",
-  "slot": "head",
-  "item": "individualism:textures/clothing/top_hat/item.png",
-  "model": "individualism:models/clothing/top_hat/model.json",
-  "texture": "individualism:textures/clothing/top_hat/model.png"
-}
