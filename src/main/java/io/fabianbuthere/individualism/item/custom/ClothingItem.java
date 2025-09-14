@@ -31,6 +31,16 @@ public class ClothingItem extends ArmorItem {
     }
 
     @Override
+    public boolean isDamageable(ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack pStack) {
+        return true;
+    }
+
+    @Override
     public Component getName(ItemStack stack) {
         return Component.literal(displayName);
     }

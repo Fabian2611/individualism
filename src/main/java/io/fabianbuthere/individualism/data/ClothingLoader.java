@@ -24,7 +24,7 @@ import java.util.*;
 public class ClothingLoader extends SimplePreparableReloadListener<Map<String, ClothingLoader.ClothingData>> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = new GsonBuilder().create();
-    private static final String BASE_PATH = "data/" + Individualism.MOD_ID + "/clothing";
+    private static final String DATA_PATH = "data/" + Individualism.MOD_ID + "/clothing";
     private static final String ITEM_JSON = "item.json";
     private final ClothingRegistry registry;
 
@@ -36,7 +36,10 @@ public class ClothingLoader extends SimplePreparableReloadListener<Map<String, C
     protected Map<String, ClothingData> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         profiler.push("Loading clothing data");
         Map<String, ClothingData> clothingDataMap = new HashMap<>();
+
+        LOGGER.info("Scanning for clothing data in: {}", DATA_PATH);
         Set<String> clothingDirs = getClothingDirectories(resourceManager);
+        LOGGER.info("Found clothing directories: {}", clothingDirs);
 
         for (String dir : clothingDirs) {
             try {
@@ -59,6 +62,7 @@ public class ClothingLoader extends SimplePreparableReloadListener<Map<String, C
         profiler.push("Registering clothing items");
         registry.clearDynamicItems();
 
+        LOGGER.info("Applying clothing data for {} items", clothingDataMap.size());
         for (Map.Entry<String, ClothingData> entry : clothingDataMap.entrySet()) {
             String id = entry.getKey();
             ClothingData data = entry.getValue();
@@ -71,24 +75,24 @@ public class ClothingLoader extends SimplePreparableReloadListener<Map<String, C
     private Set<String> getClothingDirectories(ResourceManager resourceManager) {
         Set<String> dirs = new HashSet<>();
 
-        resourceManager.listResources(BASE_PATH, loc -> true).forEach((location, resource) -> {
+        // This path pattern works with data files in the data folder
+        resourceManager.listResources(Individualism.MOD_ID + "/clothing",
+                loc -> loc.getPath().endsWith(ITEM_JSON)).forEach((location, resource) -> {
             String path = location.getPath();
-            if (path.startsWith(BASE_PATH + "/")) {
-                String relativePath = path.substring(BASE_PATH.length() + 1);
-                int firstSlash = relativePath.indexOf('/');
-                if (firstSlash > 0) {
-                    dirs.add(relativePath.substring(0, firstSlash));
-                }
+            String strippedPath = path.substring((Individualism.MOD_ID + "/clothing/").length());
+            int firstSlash = strippedPath.indexOf('/');
+            if (firstSlash > 0) {
+                dirs.add(strippedPath.substring(0, firstSlash));
             }
         });
 
         return dirs;
     }
 
-    @SuppressWarnings("removal")
     private ClothingData loadClothingData(ResourceManager resourceManager, String clothingId) {
-        ResourceLocation itemJsonLoc = new ResourceLocation(Individualism.MOD_ID,
-                BASE_PATH + "/" + clothingId + "/" + ITEM_JSON);
+        // Use the proper data folder path structure
+        ResourceLocation itemJsonLoc = ResourceLocation.fromNamespaceAndPath(Individualism.MOD_ID,
+                "clothing/" + clothingId + "/" + ITEM_JSON);
 
         JsonObject itemJson = loadJsonResource(resourceManager, itemJsonLoc);
         if (itemJson == null) {
@@ -100,13 +104,17 @@ public class ClothingLoader extends SimplePreparableReloadListener<Map<String, C
         String slotStr = GsonHelper.getAsString(itemJson, "slot", "chest");
         ArmorItem.Type slotType = parseSlotType(slotStr);
 
-        String itemTexturePath = GsonHelper.getAsString(itemJson, "item", "individualism:clothing/" + clothingId + "/item.png");
-        String modelPath = GsonHelper.getAsString(itemJson, "model", "individualism:clothing/" + clothingId + "/model.json");
-        String texturePath = GsonHelper.getAsString(itemJson, "texture", "individualism:clothing/" + clothingId + "/model.png");
+        String itemTexturePath = GsonHelper.getAsString(itemJson, "item", "individualism:textures/clothing/" + clothingId + "/item.png");
+        String modelPath = GsonHelper.getAsString(itemJson, "model", "individualism:models/clothing/" + clothingId + "/model.json");
+        String texturePath = GsonHelper.getAsString(itemJson, "texture", "individualism:textures/clothing/" + clothingId + "/model.png");
 
-        ResourceLocation itemTextureLoc = new ResourceLocation(itemTexturePath);
-        ResourceLocation modelLoc = new ResourceLocation(modelPath);
-        ResourceLocation textureLoc = new ResourceLocation(texturePath);
+        String[] itemTextureSplit = itemTexturePath.split(":", 2);
+        String[] modelSplit = modelPath.split(":", 2);
+        String[] textureSplit = texturePath.split(":", 2);
+
+        ResourceLocation itemTextureLoc = ResourceLocation.fromNamespaceAndPath(itemTextureSplit[0], itemTextureSplit[1]);
+        ResourceLocation modelLoc = ResourceLocation.fromNamespaceAndPath(modelSplit[0], modelSplit[1]);
+        ResourceLocation textureLoc = ResourceLocation.fromNamespaceAndPath(textureSplit[0], textureSplit[1]);
 
         return new ClothingData(name, slotType, itemTextureLoc, modelLoc, textureLoc);
     }
@@ -115,6 +123,7 @@ public class ClothingLoader extends SimplePreparableReloadListener<Map<String, C
         try {
             Optional<Resource> resourceOptional = resourceManager.getResource(location);
             if (resourceOptional.isEmpty()) {
+                LOGGER.error("Resource not found: {}", location);
                 return null;
             }
 

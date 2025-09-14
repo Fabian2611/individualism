@@ -2,9 +2,7 @@ package io.fabianbuthere.individualism.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
@@ -81,16 +79,6 @@ public class WearModel {
             }
 
             poseStack.translate(-origin[0] / 16.0f, -origin[1] / 16.0f, -origin[2] / 16.0f);
-
-            RenderType renderType = null;
-
-            try {
-                renderType = RenderType.entityCutout(textureLocation);
-            } catch (Exception e) {
-                LOGGER.error("Failed to get texture for model part: {}", e.getMessage());
-                poseStack.popPose();
-                return;
-            }
 
             for (Face face : faces) {
                 face.render(poseStack, buffer, from, to, light);

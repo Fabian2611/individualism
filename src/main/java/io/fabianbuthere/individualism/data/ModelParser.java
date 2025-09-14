@@ -74,7 +74,6 @@ public class ModelParser {
                         }
                     }
 
-                    // Handle origin, could be within rotation object in Blockbench format
                     float[] origin = new float[]{0, 0, 0};
                     if (partJson.has("origin")) {
                         origin = parseFloatArray(partJson, "origin", new float[]{0, 0, 0});
@@ -104,6 +103,7 @@ public class ModelParser {
             if (facesJson.has(direction)) {
                 JsonObject faceJson = facesJson.getAsJsonObject(direction);
                 float[] uv = parseFloatArray(faceJson, "uv", new float[]{0, 0, 16, 16});
+
                 faces.add(new WearModel.Face(direction, uv));
             }
         }
