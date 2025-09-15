@@ -1,6 +1,7 @@
 package io.fabianbuthere.individualism;
 
 import io.fabianbuthere.individualism.block.ModBlocks;
+import io.fabianbuthere.individualism.item.ModCreativeModeTabs;
 import io.fabianbuthere.individualism.item.ModItems;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -13,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 @Mod(Individualism.MOD_ID)
 public class Individualism {
     public static final String MOD_ID = "individualism";
-    private static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
 
     @SuppressWarnings("removal")
     public Individualism() {
@@ -27,6 +28,8 @@ public class Individualism {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+
+        ModCreativeModeTabs.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 

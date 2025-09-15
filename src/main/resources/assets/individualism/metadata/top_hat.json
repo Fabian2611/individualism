@@ -1,0 +1,7 @@
+{
+	"name": "Top Hat",
+	"slot": "head",
+	"item": "individualism:generic_hat",
+	"variant": "top_hat",
+	"playerTranslation": [-8, 28, -8]
+}
